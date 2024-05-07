@@ -1,4 +1,4 @@
-# HIL-SimulatorController
+# PRM* PROJECT
 
 ## Installation Guide
 
