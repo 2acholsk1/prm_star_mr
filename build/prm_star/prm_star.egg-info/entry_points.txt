@@ -1,0 +1,3 @@
+[console_scripts]
+hello = prm_star.hello_world:main
+
