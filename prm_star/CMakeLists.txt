@@ -20,13 +20,13 @@ ament_target_dependencies(cpp_executable rclcpp)
 # Install Cpp executables
 install(TARGETS
   cpp_executable
-  DESTINATION lib/${PROJECT_NAME}
+  DESTINATION lib/prm_star
 )
 # Install Python modules
-ament_python_install_package(${PROJECT_NAME})
+ament_python_install_package(prm_star)
 # Install Python executables
 install(PROGRAMS
   scripts/hello.py
-  DESTINATION lib/${PROJECT_NAME}
+  DESTINATION lib/prm_star
 )
 ament_package()
