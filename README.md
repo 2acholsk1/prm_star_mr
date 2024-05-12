@@ -20,7 +20,9 @@
 
 4. Use View->Command Palette... or Ctrl+Shift+P to open the command palette. Search for the command Dev Containers: Reopen in Container and execute it. This will build docker container for your. It will take a while - sit back or go for a coffee.
 
-5. After docker setup, run bash script from folder utils:
+## SETUP
+
+1. After docker setup, run bash script from folder utils:
     `bash /utils/env_setup.sh`
     
     It will install required dependencies and setup .bashrc
