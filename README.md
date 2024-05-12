@@ -22,4 +22,5 @@
 
 5. After docker setup, run bash script from folder utils:
     `bash /utils/env_setup.sh`
+    
     It will install required dependencies and setup .bashrc
