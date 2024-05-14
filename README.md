@@ -25,4 +25,24 @@
 1. After docker setup, run bash script from folder utils:
     `bash /utils/env_setup.sh`
     
-    It will install required dependencies and setup .bashrc
+    It will install required dependencies and setup .bashrc, then if you open new terminal you have not to source to ROS2
+    1.1 If you work in the same terminal, source ros2
+        `source /opt/ros/humble/setup.bash`
+
+2. Build tha ROS2 package in /home/ws with command:
+    `colcon build --symlink-install`
+
+ERRORS:
+    If you have problem with display windows, use:
+    `EXPORT DISPLAY=:0`
+
+## EXAMPLE OF NAV2
+
+1. After SETUP, set key environment variables:
+    source install/setup.bash
+    export TURTLEBOT3_MODEL=waffle
+    export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/opt/ros/humble/share/turtlebot3_gazebo/models
+
+2. In the same terminal, run:
+    `ros2 launch nav2_bringup tb3_simulation_launch.py headless:=False`
+
