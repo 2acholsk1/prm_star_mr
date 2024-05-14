@@ -39,8 +39,11 @@ ERRORS:
 ## EXAMPLE OF NAV2
 
 1. After SETUP, set key environment variables:
+
     `source install/setup.bash`
+    
     `export TURTLEBOT3_MODEL=waffle`
+
     `export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/opt/ros/humble/share/turtlebot3_gazebo/models`
 
 2. In the same terminal, run:
