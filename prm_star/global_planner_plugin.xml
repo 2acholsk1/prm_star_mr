@@ -1,0 +1,5 @@
+<library path="prm_star_planner_plugin">
+	<class name="PRM_STAR" type="PRM_STAR_type" base_class_type="nav2_core::GlobalPlanner">
+	  <description>This is a prm star planner plugin.</description>
+	</class>
+</library>
