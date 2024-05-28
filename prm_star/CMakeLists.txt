@@ -1,15 +1,17 @@
 cmake_minimum_required(VERSION 3.5)
-project(prm_star)
+project(nav2_prmstar_planner)
+
+# Default to C99
+set(CMAKE_C_STANDARD 99)
 
 # Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+set(CMAKE_CXX_STANDARD 14)
 
-# Find dependencies
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+
+# find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
@@ -25,11 +27,14 @@ find_package(tf2_ros REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
 find_package(nav2_core REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(ament_cmake_python REQUIRED)
-find_package(rclpy REQUIRED)
 
-# Include Cpp "include" directory
-include_directories(include)
+include_directories(
+  include
+)
+
+message(STATUS "eigen include ${Eigen3_INCLUDE_DIRS}")
+message(STATUS ${Eigen3_INCLUDE_DIRS})
+message(STATUS "fff ${Eigen_INCLUDE_DIRS}")
 
 set(library_name ${PROJECT_NAME}_plugin)
 
@@ -50,15 +55,15 @@ set(dependencies
   pluginlib
 )
 
-# Create Cpp executable
 add_library(${library_name} SHARED
-  src/prm_star_planner.cpp
+  src/prmstar_planner.cpp
 )
 
-add_executable(cpp_executable src/prm_star_planner.cpp)
+# add_executable(cpp_executable src/prmstar_planner.cpp)
+# Require C99 and C++17
 
 ament_target_dependencies(${library_name}
-${dependencies}
+  ${dependencies}
 )
 
 target_compile_definitions(${library_name} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
@@ -67,7 +72,6 @@ target_compile_definitions(${library_name} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNC
 pluginlib_export_plugin_description_file(nav2_core global_planner_plugin.xml)
 
 install(TARGETS ${library_name}
-  cpp_executable
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
@@ -92,14 +96,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-# Install Python modules
-ament_python_install_package(prm_star)
 
-# Install Python executables
-install(PROGRAMS
-  scripts/hello.py
-  DESTINATION lib/prm_star
-)
 ament_export_include_directories(include)
 ament_export_libraries(${library_name})
 ament_export_dependencies(${dependencies})

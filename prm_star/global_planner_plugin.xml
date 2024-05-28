@@ -1,5 +1,5 @@
-<library path="prm_star_planner_plugin">
-	<class name="PRM_STAR" type="PRM_STAR_type" base_class_type="nav2_core::GlobalPlanner">
-	  <description>This is a prm star planner plugin.</description>
+<library path="nav2_prmstar_planner_plugin">
+	<class name="nav2_prmstar_planner/prmstar" type="nav2_prmstar_planner::prmstar" base_class_type="nav2_core::GlobalPlanner">
+	  <description>This is an example plugin which produces straight path.</description>
 	</class>
 </library>
