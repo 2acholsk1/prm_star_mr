@@ -1,14 +1,13 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>prm_star</name>
-  <version>1.0.1</version>
-  <description>TODO: Package description</description>
+  <name>nav2_prmstar_planner</name>
+  <version>1.0.0</version>
+  <description>Simple PRM Star planner.</description>
   <maintainer email="p.zacholski@wp.pl">Name</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
@@ -24,7 +23,6 @@
   <depend>nav2_costmap_2d</depend>
   <depend>nav2_core</depend>
   <depend>pluginlib</depend>
-  <depend>rclpy</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
@@ -33,4 +31,4 @@
     <build_type>ament_cmake</build_type>
     <nav2_core plugin="${prefix}/global_planner_plugin.xml" />
   </export>
-  </package>
+</package>
