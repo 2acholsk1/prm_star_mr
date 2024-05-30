@@ -1,0 +1,221 @@
+<?xml version="1.0" ?>
+<robot name="ackermann_vehicle">
+
+  <!-- Podstawowa struktura pojazdu -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="1.0 0.5 0.2"/>
+      </geometry>
+      <material name="red">
+        <color rgba="0.8 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="1.0 0.5 0.2"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="10.0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
+    </inertial>
+  </link>
+
+  <!-- Przednie lewe koło -->
+  <link name="wheel_front_left">
+    <visual>
+      <geometry>
+        <cylinder length="0.05" radius="0.15"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.15"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="0.05" ixy="0.0" ixz="0.0" iyy="0.05" iyz="0.0" izz="0.05"/>
+    </inertial>
+  </link>
+
+  <!-- Joint łączący bazę z przednim lewym punktem skrętu -->
+  <joint name="left_steering_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="steering_left"/>
+    <origin xyz="0.5 0.4 0.0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <!-- Przedni lewy punkt skrętu -->
+  <link name="steering_left">
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+
+  <!-- Joint łączący przedni lewy punkt skrętu z kołem -->
+  <joint name="front_left_joint" type="continuous">
+    <parent link="steering_left"/>
+    <child link="wheel_front_left"/>
+    <origin xyz="0 0 0" rpy="1.57 0 0"/>
+    <axis xyz="0 0 -1"/>
+  </joint>
+
+  <!-- Przednie prawe koło -->
+  <link name="wheel_front_right">
+    <visual>
+      <geometry>
+        <cylinder length="0.05" radius="0.15"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.15"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="0.05" ixy="0.0" ixz="0.0" iyy="0.05" iyz="0.0" izz="0.05"/>
+    </inertial>
+  </link>
+
+  <!-- Joint łączący bazę z przednim prawym punktem skrętu -->
+  <joint name="right_steering_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="steering_right"/>
+    <origin xyz="0.5 -0.4 0.0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <!-- Przedni prawy punkt skrętu -->
+  <link name="steering_right">
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+
+  <!-- Joint łączący przedni prawy punkt skrętu z kołem -->
+  <joint name="front_right_joint" type="continuous">
+    <parent link="steering_right"/>
+    <child link="wheel_front_right"/>
+    <origin xyz="0 0 0" rpy="1.57 0 0"/>
+    <axis xyz="0 0 -1"/>
+  </joint>
+
+  <!-- Tylne lewe koło -->
+  <link name="wheel_back_left">
+    <visual>
+      <geometry>
+        <cylinder length="0.05" radius="0.15"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.15"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="0.05" ixy="0.0" ixz="0.0" iyy="0.05" iyz="0.0" izz="0.05"/>
+    </inertial>
+  </link>
+
+  <!-- Joint łączący bazę z tylnym lewym kołem -->
+  <joint name="rear_left_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_back_left"/>
+    <origin xyz="-0.5 0.4 0.0" rpy="1.57 0 0"/>
+    <axis xyz="0 0 -1"/>
+  </joint>
+
+  <!-- Tylne prawe koło -->
+  <link name="wheel_back_right">
+    <visual>
+      <geometry>
+        <cylinder length="0.05" radius="0.15"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.15"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="0.05" ixy="0.0" ixz="0.0" iyy="0.05" iyz="0.0" izz="0.05"/>
+    </inertial>
+  </link>
+
+  <!-- Joint łączący bazę z tylnym prawym kołem -->
+  <joint name="rear_right_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_back_right"/>
+    <origin xyz="-0.5 -0.4 0.0" rpy="1.57 0 0"/>
+    <axis xyz="0 0 -1"/>
+  </joint>
+
+  <!-- Plugin Gazebo do obsługi dynamiki Ackermanna -->
+  <gazebo>
+    <plugin name="ackermann_plugin" filename="libgazebo_ros_ackermann_drive.so">
+      <ros>
+        <namespace>/</namespace>
+        <remapping>cmd_vel:=/cmd_vel</remapping>
+      </ros>
+      <update_rate>100.0</update_rate>
+      <robotNamespace>/</robotNamespace>
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>/odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <robotBaseFrame>base_link</robotBaseFrame>
+
+      <front_left_joint>front_left_joint</front_left_joint>
+      <front_right_joint>front_right_joint</front_right_joint>
+      <rear_left_joint>rear_left_joint</rear_left_joint>
+      <rear_right_joint>rear_right_joint</rear_right_joint>
+      <left_steering_joint>left_steering_joint</left_steering_joint>
+      <right_steering_joint>right_steering_joint</right_steering_joint>
+      
+      <!-- <wheel_base>1.0</wheel_base>
+      <wheel_track>0.8</wheel_track> -->
+
+      <max_speed>1</max_speed>
+      <max_steer>0.5</max_steer>
+      <max_steering_angle>5</max_steering_angle>
+      
+      <left_steering_pid_gain>50 1 10</left_steering_pid_gain>
+      <right_steering_pid_gain>50 1 10</right_steering_pid_gain>
+      <linear_velocity_pid_gain>3 1 0.1</linear_velocity_pid_gain>
+    </plugin>
+  </gazebo>
+
+  <!-- Plugin Gazebo do odometrii -->
+  <gazebo>
+    <plugin name="odom_plugin" filename="libgazebo_ros_p3d.so">
+      <ros>
+        <namespace>/</namespace>
+        <remapping>odom:=/odom</remapping>
+      </ros>
+      <body_name>base_link</body_name>
+      <odomTopic>/odom</odomTopic>
+      <odomFrame>odom</odomFrame>
+      <robotBaseFrame>base_link</robotBaseFrame>
+    </plugin>
+  </gazebo>
+
+</robot>
