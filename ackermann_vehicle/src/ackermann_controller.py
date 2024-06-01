@@ -13,8 +13,8 @@ class AckermannController(Node):
         
     def publish_message(self):
         ackermann_msg = Twist()
-        ackermann_msg.linear.x = 0.0
-        ackermann_msg.angular.z = 0.
+        ackermann_msg.linear.x = .5
+        ackermann_msg.angular.z = 1.
         self.publisher_.publish(ackermann_msg)
 
 def main(args=None):
