@@ -102,6 +102,10 @@ I think that what we need to do
 
 - when Fixed Frame in Rviz is set to map, wheels are not attached to body, tf missing
 
+- no global map yet,
+
+- can't navigate to places outside map (yet)
+
 ### Config files:
 
 ackermann_v2/config/nav2_params2.yaml - nav2 parameters

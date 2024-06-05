@@ -5,7 +5,8 @@ import os
 
 def generate_launch_description():
     pkg_share = launch_ros.substitutions.FindPackageShare(package='ackermann_v2').find('ackermann_v2')
-    default_model_path = os.path.join(pkg_share, 'src/description/ackermann_robot_description.urdf')
+    # default_model_path = os.path.join(pkg_share, 'src/description/ackermann_robot_description.urdf')
+    default_model_path = os.path.join(pkg_share, 'src/description/ackermann_vehicle.urdf')
     default_rviz_config_path = os.path.join(pkg_share, 'rviz/urdf_config.rviz')
     world_path=os.path.join(pkg_share, 'world/my_world.sdf'),
 
@@ -19,6 +20,11 @@ def generate_launch_description():
         executable='joint_state_publisher',
         name='joint_state_publisher',
         arguments=[default_model_path],
+    )
+    slam_toolbox_node = launch_ros.actions.Node(
+        package='slam_toolbox',
+        executable='async_slam_toolbox_node',
+        name='slam_toolbox'
     )
     rviz_node = launch_ros.actions.Node(
         package='rviz2',
@@ -54,6 +60,7 @@ def generate_launch_description():
                                             description='Flag to enable use_sim_time'),
         joint_state_publisher_node,
         robot_state_publisher_node,
+        slam_toolbox_node,
         spawn_entity,
         robot_localization_node,
         rviz_node
