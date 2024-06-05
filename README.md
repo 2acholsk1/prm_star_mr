@@ -57,7 +57,7 @@ ERRORS:
     `ros2 launch nav2_bringup tb3_simulation_launch.py headless:=False params_file:=prm_star/config/nav2_params.yaml`
 
 
-3. Our vehicle with our world and our planner
+## Our vehicle with our world and our planner
 
 ![alt text](img/image.png)
 
