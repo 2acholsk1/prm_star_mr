@@ -28,7 +28,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "nav2_prmstar_planner/prmstar_planner.hpp"
-
+#include "dubins.hpp"
 namespace nav2_prmstar_planner
 {
 
@@ -181,21 +181,25 @@ bool prmstar::isInCollision(double x, double y)
 
 bool prmstar::collisionCheck(const Node& a, const Node& b)
 {
-  // Check if the line segment between nodes a and b is in collision with the map
-  double dx = b.x - a.x;
-  double dy = b.y - a.y;
-  double dist = std::hypot(dx, dy);
-  double step = 0.01; // Adjust step size as needed
+  // Define initial and goal configurations for Dubins path
+  double q0[] = {a.x, a.y, 0}; // Initial configuration (x, y, theta)
+  double q1[] = {b.x, b.y, 0}; // Final configuration (x, y, theta)
+  double rho = 0.1; // Define a turning radius for the Dubins path
 
-  for (double t = 0; t < dist; t += step)
-  {
-    double x = a.x + (dx / dist) * t;
-    double y = a.y + (dy / dist) * t;
-    if (isInCollision(x, y)) {
-      return true;
-    }
+  HybridAStar::DubinsPath path;
+  int ret = HybridAStar::dubins_init(q0, q1, rho, &path);
+  if (ret != 0) {
+    return true; // Path initialization failed, assume in collision
   }
-  return false;
+
+  double stepSize = 0.01; // Define a step size for sampling the Dubins path
+  for (double t = 0; t < HybridAStar::dubins_path_length(&path); t += stepSize) {
+    double q[3];
+    HybridAStar::dubins_path_sample(&path, t, q);
+    if (isInCollision(q[0], q[1])) {
+      return true; // A sampled point is in collision
+    }
+}
 }
 
 double prmstar::distance(const Node& a, const Node& b)
