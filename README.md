@@ -116,4 +116,4 @@ ackermann_v2/src/decription/ackermann_vehicle.urdf - our vehicle model
 
 ackermann_v2/rviz/urdf_config.rviz - Rviz config file
 
-ackermann_v2/launch/display.launch.py - main launch script
+ackermann_v2/launch/display.launch.py - main launch script 
