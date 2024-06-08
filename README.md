@@ -48,16 +48,28 @@ ERRORS:
 
 2. In the same terminal, run:
 
-    Default config:
+    ### Default config:
 
     `ros2 launch nav2_bringup tb3_simulation_launch.py headless:=False`
 
-    Our config:
+    ### Our config:
+
+    Default launch file have to be changed, because it's poorly done. It is located in:
+    ```bash
+    /opt/ros/humble/share/nav2_bringup/launch/tb3_simulation_launch.py
+    ```
+    Fixed file is provided in: 
+    ```bash
+    /home/ws/src/utils/tb3_simulation_launch.py
+    ```
     
-    `ros2 launch nav2_bringup tb3_simulation_launch.py headless:=False params_file:=prm_star/config/nav2_params.yaml`
+    Launch using:
+    ```bash
+    ros2 launch nav2_bringup tb3_simulation_launch.py headless:=False params_file:=prm_star/config/nav2_params.yaml robot_sdf:=/home/ws/src/ackermann_v2/src/description/ackermann_vehicle.urdf
+    ```
 
 
-## Our vehicle with our world and our planner
+## Our vehicle with our world and our planner (project abandoned)
 
 ![alt text](img/image.png)
 
@@ -98,13 +110,7 @@ This will start nav2 with our params file.
 ![alt text](img/image-1.png)
 I think that what we need to do
 
-- behaviour server and local planer probably need to be changed also,
-
 - when Fixed Frame in Rviz is set to map, wheels are not attached to body, tf missing
-
-- no global map yet,
-
-- can't navigate to places outside map (yet)
 
 ### Config files:
 

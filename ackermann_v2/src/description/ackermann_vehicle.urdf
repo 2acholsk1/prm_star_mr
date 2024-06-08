@@ -5,7 +5,7 @@
   <link name="base_link">
     <visual>
       <geometry>
-        <box size="0.5 0.3 0.15"/>
+        <box size="0.2 0.1 0.06"/>
       </geometry>
       <material name="red">
         <color rgba="0.8 0.0 0.0 1.0"/>
@@ -13,7 +13,7 @@
     </visual>
     <collision>
       <geometry>
-        <box size="0.5 0.3 0.15"/>
+        <box size="0.2 0.1 0.15"/>
       </geometry>
     </collision>
     <inertial>
@@ -27,14 +27,14 @@
   <joint name="base_joint" type="fixed">
         <parent link="base_link"/>
         <child link="base_footprint"/>
-        <origin xyz="0.0 0.0 -0.2" rpy="0 0 0"/>
+        <origin xyz="0.0 0.0 -0.05" rpy="0 0 0"/>
     </joint>
 
   <!-- Przednie lewe koło -->
   <link name="wheel_front_left">
     <visual>
       <geometry>
-        <cylinder length="0.05" radius="0.10"/>
+        <cylinder length="0.02" radius="0.08"/>
       </geometry>
       <material name="black">
         <color rgba="0.0 0.0 0.0 1.0"/>
@@ -42,7 +42,7 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.10"/>
+        <sphere radius="0.08"/>
       </geometry>
     </collision>
     <inertial>
@@ -55,7 +55,7 @@
   <joint name="left_steering_joint" type="continuous">
     <parent link="base_link"/>
     <child link="steering_left"/>
-    <origin xyz="0.25 0.2 -0.1" rpy="0 0 0"/>
+    <origin xyz="0.1 0.06 -0.03" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
@@ -79,7 +79,7 @@
   <link name="wheel_front_right">
     <visual>
       <geometry>
-        <cylinder length="0.05" radius="0.10"/>
+        <cylinder length="0.02" radius="0.08"/>
       </geometry>
       <material name="black">
         <color rgba="0.0 0.0 0.0 1.0"/>
@@ -87,7 +87,7 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.10"/>
+        <sphere radius="0.08"/>
       </geometry>
     </collision>
     <inertial>
@@ -100,7 +100,7 @@
   <joint name="right_steering_joint" type="continuous">
     <parent link="base_link"/>
     <child link="steering_right"/>
-    <origin xyz="0.25 -0.2 -0.1" rpy="0 0 0"/>
+    <origin xyz="0.1 -0.06 -0.03" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
@@ -124,7 +124,7 @@
   <link name="wheel_back_left">
     <visual>
       <geometry>
-        <cylinder length="0.05" radius="0.10"/>
+        <cylinder length="0.02" radius="0.08"/>
       </geometry>
       <material name="black">
         <color rgba="0.0 0.0 0.0 1.0"/>
@@ -132,7 +132,7 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.10"/>
+        <sphere radius="0.08"/>
       </geometry>
     </collision>
     <inertial>
@@ -145,7 +145,7 @@
   <joint name="rear_left_joint" type="continuous">
     <parent link="base_link"/>
     <child link="wheel_back_left"/>
-    <origin xyz="-0.25 0.2 -0.1" rpy="1.57 0 0"/>
+    <origin xyz="-0.1 0.06 -0.03" rpy="1.57 0 0"/>
     <axis xyz="0 0 -1"/>
   </joint>
 
@@ -153,7 +153,7 @@
   <link name="wheel_back_right">
     <visual>
       <geometry>
-        <cylinder length="0.05" radius="0.10"/>
+        <cylinder length="0.02" radius="0.08"/>
       </geometry>
       <material name="black">
         <color rgba="0.0 0.0 0.0 1.0"/>
@@ -161,7 +161,7 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.10"/>
+        <sphere radius="0.08"/>
       </geometry>
     </collision>
     <inertial>
@@ -174,14 +174,14 @@
   <joint name="rear_right_joint" type="continuous">
     <parent link="base_link"/>
     <child link="wheel_back_right"/>
-    <origin xyz="-0.25 -0.2 -0.1" rpy="1.57 0 0"/>
+    <origin xyz="-0.1 -0.06 -0.03" rpy="1.57 0 0"/>
     <axis xyz="0 0 -1"/>
   </joint>
 
   <link name="lidar_link">
     <visual>
       <geometry>
-        <cylinder length="0.05" radius="0.05"/>
+        <cylinder length="0.01" radius="0.02"/>
       </geometry>
       <material name="black">
         <color rgba="0.0 0.0 0.0 1.0"/>
@@ -189,7 +189,7 @@
     </visual>
     <collision>
       <geometry>
-        <cylinder length="0.05" radius="0.05"/>
+        <cylinder length="0.01" radius="0.02"/>
       </geometry>
     </collision>
     <inertial>
@@ -201,7 +201,7 @@
   <joint name="lidar_joint" type="fixed">
     <parent link="base_link"/>
     <child link="lidar_link"/>
-    <origin xyz="0.0 0.0 0.1" rpy="0 0 0"/>
+    <origin xyz="0.0 0.0 0.05" rpy="0 0 0"/>
   </joint>
 
   <gazebo reference="lidar_link">
