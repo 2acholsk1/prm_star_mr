@@ -29,9 +29,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "nav2_prmstar_planner/prmstar_planner.hpp"
 #include "dubins.hpp"
+
 namespace nav2_prmstar_planner
 {
 
+// Configure planner parameters
 void prmstar::configure(
   const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
   std::string name, std::shared_ptr<tf2_ros::Buffer> tf,
@@ -43,16 +45,18 @@ void prmstar::configure(
   costmap_ = costmap_ros->getCostmap();
   global_frame_ = costmap_ros->getGlobalFrameID();
 
-  // Parameter initialization
+  // Initialize parameters if not declared
   nav2_util::declare_parameter_if_not_declared(
-    node_, name_ + ".num_samples", rclcpp::ParameterValue(100));
+    node_, name_ + ".num_samples", rclcpp::ParameterValue(5000));
   nav2_util::declare_parameter_if_not_declared(
-    node_, name_ + ".connection_radius", rclcpp::ParameterValue(1.0));
+    node_, name_ + ".connection_radius", rclcpp::ParameterValue(0.25));
 
+  // Get parameters
   node_->get_parameter(name_ + ".num_samples", num_samples_);
   node_->get_parameter(name_ + ".connection_radius", connection_radius_);
 }
 
+// Cleanup method
 void prmstar::cleanup()
 {
   RCLCPP_INFO(
@@ -60,6 +64,7 @@ void prmstar::cleanup()
     name_.c_str());
 }
 
+// Activate method
 void prmstar::activate()
 {
   RCLCPP_INFO(
@@ -67,6 +72,7 @@ void prmstar::activate()
     name_.c_str());
 }
 
+// Deactivate method
 void prmstar::deactivate()
 {
   RCLCPP_INFO(
@@ -74,13 +80,14 @@ void prmstar::deactivate()
     name_.c_str());
 }
 
+// Create global path
 nav_msgs::msg::Path prmstar::createPlan(
   const geometry_msgs::msg::PoseStamped & start,
   const geometry_msgs::msg::PoseStamped & goal)
 {
   nav_msgs::msg::Path global_path;
 
-  // Checking if the goal and start state is in the global frame
+  // Check if start and goal are in the global frame
   if (start.header.frame_id != global_frame_) {
     RCLCPP_ERROR(
       node_->get_logger(), "Planner will only accept start position from %s frame",
@@ -95,6 +102,7 @@ nav_msgs::msg::Path prmstar::createPlan(
     return global_path;
   }
 
+  // Initialize global path
   global_path.poses.clear();
   global_path.header.stamp = node_->now();
   global_path.header.frame_id = global_frame_;
@@ -105,16 +113,13 @@ nav_msgs::msg::Path prmstar::createPlan(
   // Find shortest path in the roadmap
   std::vector<Node*> path = findShortestPath(roadmap, start, goal);
 
-  // Convert the path to ROS message format
+  // Convert path to ROS message format
   for (auto node : path)
   {
     geometry_msgs::msg::PoseStamped pose;
     pose.pose.position.x = node->x;
     pose.pose.position.y = node->y;
     pose.pose.position.z = 0.0;
-    pose.pose.orientation.x = 0.0;
-    pose.pose.orientation.y = 0.0;
-    pose.pose.orientation.z = 0.0;
     pose.pose.orientation.w = 1.0;
     pose.header.stamp = node_->now();
     pose.header.frame_id = global_frame_;
@@ -124,21 +129,17 @@ nav_msgs::msg::Path prmstar::createPlan(
   return global_path;
 }
 
+// Generate PRM* roadmap
 std::vector<Node> prmstar::generateRoadmap(const geometry_msgs::msg::PoseStamped & start, const geometry_msgs::msg::PoseStamped & goal)
 {
   std::vector<Node> nodes;
   std::default_random_engine generator;
-  // Pobierz granice obszaru mapy
-  double map_min_x = costmap_->getOriginX();
-  double map_max_x = map_min_x + costmap_->getSizeInMetersX();
-  double map_min_y = costmap_->getOriginY();
-  double map_max_y = map_min_y + costmap_->getSizeInMetersY();
 
-  // Ustaw zakresy losowania na podstawie granic mapy
-  std::uniform_real_distribution<double> distribution_x(map_min_x/4, map_max_x/4);
-  std::uniform_real_distribution<double> distribution_y(map_min_y/4, map_max_y/4);
+  // Set random sampling range based on map boundaries
+  std::uniform_real_distribution<double> distribution_x(-3.0, 3.0);
+  std::uniform_real_distribution<double> distribution_y(-3.0, 3.0);
 
-  // Add start and goal to the nodes
+  // Add start and goal to nodes
   nodes.push_back({start.pose.position.x, start.pose.position.y});
   nodes.push_back({goal.pose.position.x, goal.pose.position.y});
 
@@ -147,7 +148,8 @@ std::vector<Node> prmstar::generateRoadmap(const geometry_msgs::msg::PoseStamped
   {
     double x = distribution_x(generator);
     double y = distribution_y(generator);
-    // Check if the sampled point is in collision
+
+    // Check collision for sampled point
     if (!isInCollision(x, y)) {
       nodes.push_back({x, y});
     }
@@ -169,50 +171,64 @@ std::vector<Node> prmstar::generateRoadmap(const geometry_msgs::msg::PoseStamped
   return nodes;
 }
 
+// Check collision for a line segment
 bool prmstar::isInCollision(double x, double y)
 {
   // Check if the point (x, y) is in collision with the map
   unsigned int mx, my;
   if (costmap_->worldToMap(x, y, mx, my)) {
-    return costmap_->getCost(mx, my) >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
+    return costmap_->getCost(mx, my) >= 240;
   }
   return true; // Assume out of bounds points are in collision
 }
 
+// Check collision for a line segment
 bool prmstar::collisionCheck(const Node& a, const Node& b)
 {
-  // Define initial and goal configurations for Dubins path
-  double q0[] = {a.x, a.y, 0}; // Initial configuration (x, y, theta)
-  double q1[] = {b.x, b.y, 0}; // Final configuration (x, y, theta)
-  double rho = 0.1; // Define a turning radius for the Dubins path
+  // Check if the line segment between nodes a and b is in collision with the map
+  double dx = b.x - a.x;
+  double dy = b.y - a.y;
+  double dist = std::hypot(dx, dy);
+  double step = 0.05; // Adjust step size as needed
 
-  HybridAStar::DubinsPath path;
-  int ret = HybridAStar::dubins_init(q0, q1, rho, &path);
-  if (ret != 0) {
-    return true; // Path initialization failed, assume in collision
-  }
-
-  double stepSize = 0.01; // Define a step size for sampling the Dubins path
-  for (double t = 0; t < HybridAStar::dubins_path_length(&path); t += stepSize) {
-    double q[3];
-    HybridAStar::dubins_path_sample(&path, t, q);
-    if (isInCollision(q[0], q[1])) {
-      return true; // A sampled point is in collision
+  for (double t = 0; t < dist; t += step)
+  {
+    double x = a.x + (dx / dist) * t;
+    double y = a.y + (dy / dist) * t;
+    if (isInCollision(x, y)) {
+      return true;
     }
-}
+  }
+  return false;
 }
 
+// Calculate Euclidean distance between two nodes
 double prmstar::distance(const Node& a, const Node& b)
 {
   return std::hypot(a.x - b.x, a.y - b.y);
 }
 
+// Heuristic function to estimate cost from a node to goal
 double prmstar::heuristic(const Node& a, const Node& b)
 {
   // Euclidean distance as the heuristic
-  return distance(a, b);
+  double euclidean_distance = std::hypot(a.x - b.x, a.y - b.y);
+
+  // Additional cost for proximity to obstacles
+  double obstacle_proximity_cost = 0.0;
+  double proximity_threshold = 0.2; // Threshold distance to consider obstacle proximity
+  for (double dx = -proximity_threshold; dx <= proximity_threshold; dx += 0.1) {
+    for (double dy = -proximity_threshold; dy <= proximity_threshold; dy += 0.1) {
+      if (isInCollision(a.x + dx, a.y + dy)) {
+        obstacle_proximity_cost += 0.5; // Increase cost if near obstacle
+      }
+    }
+  }
+
+  return euclidean_distance + obstacle_proximity_cost;
 }
 
+// Find shortest path using A* algorithm
 std::vector<Node*> prmstar::findShortestPath(const std::vector<Node>& nodes, const geometry_msgs::msg::PoseStamped & start, const geometry_msgs::msg::PoseStamped & goal)
 {
   Node* start_node = nullptr;
@@ -287,4 +303,5 @@ std::vector<Node*> prmstar::findShortestPath(const std::vector<Node>& nodes, con
 
 }  // namespace nav2_prmstar_planner
 
+// Export the plugin class
 PLUGINLIB_EXPORT_CLASS(nav2_prmstar_planner::prmstar, nav2_core::GlobalPlanner)
