@@ -1,5 +1,7 @@
 # PRM* PROJECT
 
+![alt text](img/main_image.png)
+
 ## Installation Guide
 
 ### Linux Ubuntu
@@ -36,31 +38,34 @@ ERRORS:
     If you have problem with display windows, use:
     `EXPORT DISPLAY=:0`
 
-## EXAMPLE OF NAV2
+## RUN
 
 1. After SETUP, set key environment variables:
 
-    `source install/setup.bash`
+```bash
+source install/setup.bash
     
-    `export TURTLEBOT3_MODEL=waffle`
+export TURTLEBOT3_MODEL=waffle
 
-    `export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/opt/ros/humble/share/turtlebot3_gazebo/models`
+export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/opt/ros/humble/share/turtlebot3_gazebo/models
+```
 
 2. In the same terminal, run:
 
-    ### Default config:
+    ### Default config (try this first):
 
-    `ros2 launch nav2_bringup tb3_simulation_launch.py headless:=False`
+    ```bash
+    ros2 launch nav2_bringup tb3_simulation_launch.py headless:=False
+    ```
 
     ### Our config:
 
-    Default launch file have to be changed, because it's poorly done. It is located in:
+    Default launch file have to be changed, because it's poorly done at doesn't allow parametrisation. It is located in: `/opt/ros/humble/share/nav2_bringup/launch/tb3_simulation_launch.py`
+    Fixed file is provided in: `/home/ws/src/utils/tb3_simulation_launch.py`
+
+    You can copy it with:
     ```bash
-    /opt/ros/humble/share/nav2_bringup/launch/tb3_simulation_launch.py
-    ```
-    Fixed file is provided in: 
-    ```bash
-    /home/ws/src/utils/tb3_simulation_launch.py
+    sudo cp /home/ws/src/utils/tb3_simulation_launch.py /opt/ros/humble/share/nav2_bringup/launch/tb3_simulation_launch.py
     ```
     
     Launch using:
@@ -71,17 +76,9 @@ ERRORS:
 
 ## Current state:
 
-- we have working car model with Ackermann kinematics,
+TODO
 
-- it can be moved with nav2,
-
-- currently it's working with "nav2_navfn_planner/NavfnPlanner", I tried changing it to our planner which is currently straightline planner but it didn't move, don't know why xD
-
-- we need to implement proper robot_model_type as planner currently thinks it has a turtlebot kinematics:
-![alt text](img/image-1.png)
-I think that what we need to do
-
-### Config files:
+## Config files:
 
 ackermann_v2/config/nav2_params2.yaml - nav2 parameters
 

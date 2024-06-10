@@ -45,9 +45,9 @@ void prmstar::configure(
 
   // Parameter initialization
   nav2_util::declare_parameter_if_not_declared(
-    node_, name_ + ".num_samples", rclcpp::ParameterValue(100));
+    node_, name_ + ".num_samples", rclcpp::ParameterValue(5000));
   nav2_util::declare_parameter_if_not_declared(
-    node_, name_ + ".connection_radius", rclcpp::ParameterValue(1.0));
+    node_, name_ + ".connection_radius", rclcpp::ParameterValue(0.25));
 
   node_->get_parameter(name_ + ".num_samples", num_samples_);
   node_->get_parameter(name_ + ".connection_radius", connection_radius_);
@@ -112,9 +112,6 @@ nav_msgs::msg::Path prmstar::createPlan(
     pose.pose.position.x = node->x;
     pose.pose.position.y = node->y;
     pose.pose.position.z = 0.0;
-    pose.pose.orientation.x = 0.0;
-    pose.pose.orientation.y = 0.0;
-    pose.pose.orientation.z = 0.0;
     pose.pose.orientation.w = 1.0;
     pose.header.stamp = node_->now();
     pose.header.frame_id = global_frame_;
@@ -135,8 +132,8 @@ std::vector<Node> prmstar::generateRoadmap(const geometry_msgs::msg::PoseStamped
   double map_max_y = map_min_y + costmap_->getSizeInMetersY();
 
   // Ustaw zakresy losowania na podstawie granic mapy
-  std::uniform_real_distribution<double> distribution_x(map_min_x/4, map_max_x/4);
-  std::uniform_real_distribution<double> distribution_y(map_min_y/4, map_max_y/4);
+  std::uniform_real_distribution<double> distribution_x(-3.0, 3.0);
+  std::uniform_real_distribution<double> distribution_y(-3.0, 3.0);
 
   // Add start and goal to the nodes
   nodes.push_back({start.pose.position.x, start.pose.position.y});
@@ -174,32 +171,28 @@ bool prmstar::isInCollision(double x, double y)
   // Check if the point (x, y) is in collision with the map
   unsigned int mx, my;
   if (costmap_->worldToMap(x, y, mx, my)) {
-    return costmap_->getCost(mx, my) >= nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
+    return costmap_->getCost(mx, my) >= 240;
   }
   return true; // Assume out of bounds points are in collision
 }
 
 bool prmstar::collisionCheck(const Node& a, const Node& b)
 {
-  // Define initial and goal configurations for Dubins path
-  double q0[] = {a.x, a.y, 0}; // Initial configuration (x, y, theta)
-  double q1[] = {b.x, b.y, 0}; // Final configuration (x, y, theta)
-  double rho = 0.1; // Define a turning radius for the Dubins path
+  // Check if the line segment between nodes a and b is in collision with the map
+  double dx = b.x - a.x;
+  double dy = b.y - a.y;
+  double dist = std::hypot(dx, dy);
+  double step = 0.05; // Adjust step size as needed
 
-  HybridAStar::DubinsPath path;
-  int ret = HybridAStar::dubins_init(q0, q1, rho, &path);
-  if (ret != 0) {
-    return true; // Path initialization failed, assume in collision
-  }
-
-  double stepSize = 0.01; // Define a step size for sampling the Dubins path
-  for (double t = 0; t < HybridAStar::dubins_path_length(&path); t += stepSize) {
-    double q[3];
-    HybridAStar::dubins_path_sample(&path, t, q);
-    if (isInCollision(q[0], q[1])) {
-      return true; // A sampled point is in collision
+  for (double t = 0; t < dist; t += step)
+  {
+    double x = a.x + (dx / dist) * t;
+    double y = a.y + (dy / dist) * t;
+    if (isInCollision(x, y)) {
+      return true;
     }
-}
+  }
+  return false;
 }
 
 double prmstar::distance(const Node& a, const Node& b)
@@ -210,7 +203,20 @@ double prmstar::distance(const Node& a, const Node& b)
 double prmstar::heuristic(const Node& a, const Node& b)
 {
   // Euclidean distance as the heuristic
-  return distance(a, b);
+  double euclidean_distance = std::hypot(a.x - b.x, a.y - b.y);
+
+  // Additional cost for proximity to obstacles
+  double obstacle_proximity_cost = 0.0;
+  double proximity_threshold = 0.2; // Threshold distance to consider obstacle proximity
+  for (double dx = -proximity_threshold; dx <= proximity_threshold; dx += 0.1) {
+    for (double dy = -proximity_threshold; dy <= proximity_threshold; dy += 0.1) {
+      if (isInCollision(a.x + dx, a.y + dy)) {
+        obstacle_proximity_cost += 0.5; // Increase cost if near obstacle
+      }
+    }
+  }
+
+  return euclidean_distance + obstacle_proximity_cost;
 }
 
 std::vector<Node*> prmstar::findShortestPath(const std::vector<Node>& nodes, const geometry_msgs::msg::PoseStamped & start, const geometry_msgs::msg::PoseStamped & goal)
