@@ -57,6 +57,7 @@ set(dependencies
 
 add_library(${library_name} SHARED
   src/prmstar_planner.cpp
+  src/dubins.cpp
 )
 
 # add_executable(cpp_executable src/prmstar_planner.cpp)
