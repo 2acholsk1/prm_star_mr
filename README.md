@@ -25,7 +25,7 @@
 ## SETUP
 
 1. After docker setup, run bash script from folder utils:
-    `bash /utils/env_setup.sh`
+    `bash src/utils/env_setup.sh`
     
     It will install required dependencies and setup .bashrc, then if you open new terminal you have not to source to ROS2
     1.1 If you work in the same terminal, source ros2
@@ -36,7 +36,7 @@
 
 ERRORS:
     If you have problem with display windows, use:
-    `EXPORT DISPLAY=:0`
+    `export DISPLAY=:0`
 
 ## RUN
 
