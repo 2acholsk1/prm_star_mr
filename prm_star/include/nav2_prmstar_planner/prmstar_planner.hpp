@@ -89,7 +89,7 @@ private:
   bool isInCollision(double x, double y);
   std::vector<geometry_msgs::msg::PoseStamped> generateDubinsPath(const Node& a, const Node& b);
   void adjustOrientations(std::vector<Node*>& path);
-
+  double calculateConnectionRadius(int numNodes);
 
   bool collisionCheck(const Node& a, const Node& b);
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
@@ -98,7 +98,8 @@ private:
   nav2_costmap_2d::Costmap2D* costmap_;
   std::string global_frame_;
   int num_samples_;
-  double connection_radius_;
+  double gamma_;
+  
 };
 
 }  // namespace nav2_prmstar_planner

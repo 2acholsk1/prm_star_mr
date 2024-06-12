@@ -46,12 +46,12 @@ void prmstar::configure(
 
   // Parameter initialization
   nav2_util::declare_parameter_if_not_declared(
-    node_, name_ + ".num_samples", rclcpp::ParameterValue(5000));
+    node_, name_ + ".num_samples", rclcpp::ParameterValue(1000));
   nav2_util::declare_parameter_if_not_declared(
-    node_, name_ + ".connection_radius", rclcpp::ParameterValue(1.5));
+    node_, name_ + ".gamma", rclcpp::ParameterValue(6.0));  // Updated gamma value
 
   node_->get_parameter(name_ + ".num_samples", num_samples_);
-  node_->get_parameter(name_ + ".connection_radius", connection_radius_);
+  node_->get_parameter(name_ + ".gamma", gamma_);
 }
 
 void prmstar::cleanup()
@@ -122,15 +122,11 @@ nav_msgs::msg::Path prmstar::createPlan(
 
 void prmstar::adjustOrientations(std::vector<Node*>& path)
 {
-  std::default_random_engine generator;
-  std::uniform_real_distribution<double> distribution(-1.5, 1.5); // Małe losowe przesunięcie
-
   for (size_t i = 0; i < path.size() - 1; ++i) {
     Node* current = path[i];
     Node* next = path[i + 1];
 
     double angle = std::atan2(next->y - current->y, next->x - current->x);
-    angle += distribution(generator); // Dodanie małego losowego przesunięcia
     current->theta = angle;
   }
 
@@ -140,16 +136,15 @@ void prmstar::adjustOrientations(std::vector<Node*>& path)
     Node* second_last = path[path.size() - 2];
 
     double angle = std::atan2(last->y - second_last->y, last->x - second_last->x);
-    angle += distribution(generator); // Dodanie małego losowego przesunięcia
     last->theta = angle;
   }
 }
-
 
 std::vector<Node> prmstar::generateRoadmap(const geometry_msgs::msg::PoseStamped & start, const geometry_msgs::msg::PoseStamped & goal)
 {
   std::vector<Node> nodes;
   std::default_random_engine generator;
+
   // Get the map bounds
   double map_min_x = costmap_->getOriginX();
   double map_max_x = map_min_x + costmap_->getSizeInMetersX();
@@ -159,38 +154,45 @@ std::vector<Node> prmstar::generateRoadmap(const geometry_msgs::msg::PoseStamped
   // Set sampling ranges based on map bounds
   std::uniform_real_distribution<double> distribution_x(map_min_x, map_max_x);
   std::uniform_real_distribution<double> distribution_y(map_min_y, map_max_y);
-  std::uniform_real_distribution<double> distribution_theta(-M_PI, M_PI);
 
   // Add start and goal to the nodes
   nodes.push_back({start.pose.position.x, start.pose.position.y, tf2::getYaw(start.pose.orientation)});
   nodes.push_back({goal.pose.position.x, goal.pose.position.y, tf2::getYaw(goal.pose.orientation)});
 
-  // Sample random nodes
+  // Define initial connection radius
+  double connection_radius = calculateConnectionRadius(nodes.size());
+
+  // Sample random nodes and connect them
   for (int i = 0; i < num_samples_; ++i)
   {
     double x = distribution_x(generator);
     double y = distribution_y(generator);
-    double theta = distribution_theta(generator);
-    // Check if the sampled point is in collision
-    if (!isInCollision(x, y)) {
-      nodes.push_back({x, y, theta});
-    }
-  }
 
-  // Connect nodes within connection radius
-  for (auto& node1 : nodes)
-  {
-    for (auto& node2 : nodes)
-    {
-      if (&node1 != &node2 && distance(node1, node2) < connection_radius_ && !collisionCheck(node1, node2))
-      {
-        node1.neighbors.push_back(&node2);
-        node2.neighbors.push_back(&node1);
+    if (!isInCollision(x, y)) {
+      Node newNode = {x, y, 0.0};
+
+      // Connect the new node to existing nodes within the current radius
+      for (auto& existingNode : nodes) {
+        if (distance(newNode, existingNode) < connection_radius && !collisionCheck(newNode, existingNode)) {
+          newNode.neighbors.push_back(&existingNode);
+          existingNode.neighbors.push_back(&newNode);
+        }
       }
+
+      nodes.push_back(newNode);
+
+      // Update the connection radius based on the current number of nodes
+      connection_radius = calculateConnectionRadius(nodes.size());
     }
   }
 
   return nodes;
+}
+
+double prmstar::calculateConnectionRadius(int numNodes)
+{
+  // Dynamic calculation of connection radius based on the current number of nodes
+  return gamma_ * std::pow(std::log(numNodes) / numNodes, 1.0 / 2.0);
 }
 
 std::vector<geometry_msgs::msg::PoseStamped> prmstar::generateDubinsPath(const Node& a, const Node& b)
@@ -198,36 +200,53 @@ std::vector<geometry_msgs::msg::PoseStamped> prmstar::generateDubinsPath(const N
   std::vector<geometry_msgs::msg::PoseStamped> dubins_path;
   double q0[] = {a.x, a.y, a.theta}; // Start configuration
   double q1[] = {b.x, b.y, b.theta}; // End configuration
-  double turning_radius = 0.4; // Define turning radius
+  double turning_radius = 0.3; // Initial turning radius
 
   HybridAStar::DubinsPath path;
-  if (dubins_init(q0, q1, turning_radius, &path) != 0) {
-    RCLCPP_ERROR(node_->get_logger(), "Error generating Dubins path");
-    return dubins_path;
-  }
+  int max_attempts = 10; // Maximum number of attempts to find a collision-free path
+  bool path_found = false;
 
-  double max_points = 100; // Maximum number of points you want to generate
-  double length = dubins_path_length(&path);
+  for (int attempt = 0; attempt < max_attempts; ++attempt) {
+    if (dubins_init(q0, q1, turning_radius, &path) == 0) {
+      double max_points = 100; // Maximum number of points you want to generate
+      double length = dubins_path_length(&path);
 
-  double step_size = length / max_points; // Calculate step size based on path length
+      double step_size = length / max_points; // Calculate step size based on path length
 
-  // Ensure step_size is not zero to avoid division by zero
-  if (step_size > length) {
-    step_size = length;
-  }
+      // Ensure step_size is not zero to avoid division by zero
+      if (step_size > length) {
+        step_size = length;
+      }
 
-  for (double t = 0; t < length; t += step_size)
-  {
-    double q[3];
-    if (dubins_path_sample(&path, t, q) == 0) {
-      geometry_msgs::msg::PoseStamped pose;
-      pose.pose.position.x = q[0];
-      pose.pose.position.y = q[1];
-      tf2::Quaternion quat;
-      quat.setRPY(0, 0, q[2]);
-      pose.pose.orientation = tf2::toMsg(quat);
-      dubins_path.push_back(pose);
+      path_found = true;
+      for (double t = 0; t < length; t += step_size)
+      {
+        double q[3];
+        if (dubins_path_sample(&path, t, q) == 0) {
+          if (isInCollision(q[0], q[1])) {
+            RCLCPP_WARN(node_->get_logger(), "Dubins path collides with obstacle. Trying larger turning radius.");
+            path_found = false;
+            break; // Exit the loop and try with a larger turning radius
+          }
+          geometry_msgs::msg::PoseStamped pose;
+          pose.pose.position.x = q[0];
+          pose.pose.position.y = q[1];
+          tf2::Quaternion quat;
+          quat.setRPY(0, 0, q[2]);
+          pose.pose.orientation = tf2::toMsg(quat);
+          dubins_path.push_back(pose);
+        }
+      }
     }
+    if (path_found) {
+      break; // Exit the loop if a valid path is found
+    }
+    turning_radius += 0.1; // Increase the turning radius and try again
+    dubins_path.clear(); // Clear the previous path
+  }
+
+  if (!path_found) {
+    RCLCPP_ERROR(node_->get_logger(), "Failed to generate a collision-free Dubins path after multiple attempts.");
   }
 
   return dubins_path;
@@ -255,7 +274,6 @@ bool prmstar::collisionCheck(const Node& a, const Node& b)
   }
   return false;
 }
-
 double prmstar::distance(const Node& a, const Node& b)
 {
   return std::hypot(a.x - b.x, a.y - b.y);
