@@ -49,7 +49,7 @@ void prmstar::configure(
   nav2_util::declare_parameter_if_not_declared(
     node_, name_ + ".num_samples", rclcpp::ParameterValue(5000));
   nav2_util::declare_parameter_if_not_declared(
-    node_, name_ + ".connection_radius", rclcpp::ParameterValue(0.25));
+    node_, name_ + ".connection_radius", rclcpp::ParameterValue(1.0));
 
   // Get parameters
   node_->get_parameter(name_ + ".num_samples", num_samples_);
@@ -155,17 +155,26 @@ std::vector<Node> prmstar::generateRoadmap(const geometry_msgs::msg::PoseStamped
     }
   }
 
+  double connection_radius_temp = 1.0;
+
+  double gamma_ = 1.0;
+  int i = 2;
+
   // Connect nodes within connection radius
   for (auto& node1 : nodes)
   {
     for (auto& node2 : nodes)
     {
-      if (&node1 != &node2 && distance(node1, node2) < connection_radius_ && !collisionCheck(node1, node2))
+      if (&node1 != &node2 && distance(node1, node2) < connection_radius_temp && !collisionCheck(node1, node2))
       {
         node1.neighbors.push_back(&node2);
         node2.neighbors.push_back(&node1);
       }
     }
+
+    connection_radius_temp = gamma_ * std::pow(std::log(i) / i, 1.0 / 2.0);
+
+    i++;
   }
 
   return nodes;

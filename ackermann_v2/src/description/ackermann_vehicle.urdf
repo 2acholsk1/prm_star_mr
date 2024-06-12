@@ -263,9 +263,9 @@
       <left_steering_joint>left_steering_joint</left_steering_joint>
       <right_steering_joint>right_steering_joint</right_steering_joint>
       
-      <wheel_base>0.5</wheel_base>
-      <front_wheel_track>0.4</front_wheel_track>
-      <rear_wheel_track>0.4</rear_wheel_track>
+      <wheel_base>0.2</wheel_base>
+      <front_wheel_track>0.12</front_wheel_track>
+      <rear_wheel_track>0.12</rear_wheel_track>
 
       <max_speed>2</max_speed>
       <max_steer>0.707</max_steer>
