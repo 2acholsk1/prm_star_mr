@@ -84,12 +84,12 @@ export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/opt/ros/humble/share/turtlebot3_gaz
     
     Launch PRM* using:
     ```bash
-    ros2 launch nav2_bringup tb3_simulation_launch.py headless:=False params_file:=/home/ws/src/prm_star/config/nav2_params.yaml robot_sdf:=/home/ws/src/ackermann_v2/src/description/ackermann_vehicle.urdf rviz_config_file:=/home/ws/src/ackermann_v2/rviz/rviz_config.rviz
+    ros2 launch nav2_bringup tb3_simulation_launch.py headless:=False params_file:=/home/ws/src/prm_star/config/nav2_prm_star.yaml robot_sdf:=/home/ws/src/ackermann_v2/src/description/ackermann_vehicle.urdf rviz_config_file:=/home/ws/src/ackermann_v2/rviz/rviz_config.rviz
     ```
 
     Launch HybridPlanner + MPPI using:
     ```bash
-    ros2 launch nav2_bringup tb3_simulation_launch.py headless:=True params_file:=/home/ws/src/prm_star/config/nav2_params2.yaml robot_sdf:=/home/ws/src/ackermann_v2/src/description/ackermann_vehicle.urdf rviz_config_file:=/home/ws/src/ackermann_v2/rviz/rviz_config.rviz
+    ros2 launch nav2_bringup tb3_simulation_launch.py headless:=True params_file:=/home/ws/src/prm_star/config/nav2_mppi.yaml robot_sdf:=/home/ws/src/ackermann_v2/src/description/ackermann_vehicle.urdf rviz_config_file:=/home/ws/src/ackermann_v2/rviz/rviz_config.rviz
     ```
 
     Launch HybridPlanner + RPP:
@@ -178,11 +178,15 @@ __MPPI (Model Predictive Path Integral Control)__
 
 ## Config files:
 
-ackermann_v2/config/nav2_params2.yaml - nav2 parameters
-
 ackermann_v2/src/decription/ackermann_vehicle.urdf - our vehicle model
 
 ackermann_v2/rviz/urdf_config.rviz - Rviz config file
+
+prm_star/config/nav2_prm_star.yaml - Nav2 parameters for PRM* example
+
+prm_star/config/nav2_rpp.yaml - Nav2 parameters for RPP + HybridA* example
+
+prm_star/config/nav2_mppi.yaml - Nav2 parameters for MPPI + HybridA* example
 
 ## Contributors
 
