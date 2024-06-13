@@ -46,12 +46,12 @@ void prmstar::configure(
 
   // Parameter initialization
   nav2_util::declare_parameter_if_not_declared(
-    node_, name_ + ".num_samples", rclcpp::ParameterValue(1000));
-  nav2_util::declare_parameter_if_not_declared(
-    node_, name_ + ".gamma", rclcpp::ParameterValue(6.0));  // Updated gamma value
+    node_, name_ + ".num_samples", rclcpp::ParameterValue(2000));
+  // nav2_util::declare_parameter_if_not_declared(
+    // node_, name_ + ".gamma", rclcpp::ParameterValue(6.0));  // Updated gamma value
 
   node_->get_parameter(name_ + ".num_samples", num_samples_);
-  node_->get_parameter(name_ + ".gamma", gamma_);
+  // node_->get_parameter(name_ + ".gamma", gamma_);
 }
 
 void prmstar::cleanup()
@@ -106,8 +106,6 @@ nav_msgs::msg::Path prmstar::createPlan(
   // Find shortest path in the roadmap
   std::vector<Node*> path = findShortestPath(roadmap, start, goal);
 
-  // Adjust orientations to allow Dubins path generation
-  // adjustOrientations(path);
 
   // Convert the path to ROS message format and add PRM path
   for (size_t i = 0; i < path.size() - 1; ++i)
@@ -120,25 +118,6 @@ nav_msgs::msg::Path prmstar::createPlan(
   return global_path;
 }
 
-void prmstar::adjustOrientations(std::vector<Node*>& path)
-{
-  for (size_t i = 0; i < path.size() - 1; ++i) {
-    Node* current = path[i];
-    Node* next = path[i + 1];
-
-    double angle = std::atan2(next->y - current->y, next->x - current->x);
-    current->theta = angle;
-  }
-
-  // Adjust the orientation of the goal node to match the direction to the previous node
-  if (path.size() > 1) {
-    Node* last = path.back();
-    Node* second_last = path[path.size() - 2];
-
-    double angle = std::atan2(last->y - second_last->y, last->x - second_last->x);
-    last->theta = angle;
-  }
-}
 
 std::vector<Node> prmstar::generateRoadmap(const geometry_msgs::msg::PoseStamped & start, const geometry_msgs::msg::PoseStamped & goal)
 {
@@ -167,7 +146,7 @@ std::vector<Node> prmstar::generateRoadmap(const geometry_msgs::msg::PoseStamped
     }
   }
 
-  double connection_radius_temp = 1.0;
+  double connection_radius_temp = 3.0;
 
   double gamma_ = 1.0;
   int i = 2;
@@ -203,12 +182,12 @@ std::vector<geometry_msgs::msg::PoseStamped> prmstar::generateDubinsPath(const N
   double turning_radius = 0.3; // Initial turning radius
 
   HybridAStar::DubinsPath path;
-  int max_attempts = 10; // Maximum number of attempts to find a collision-free path
+  int max_attempts = 20; // Maximum number of attempts to find a collision-free path
   bool path_found = false;
 
   for (int attempt = 0; attempt < max_attempts; ++attempt) {
     if (dubins_init(q0, q1, turning_radius, &path) == 0) {
-      double max_points = 100; // Maximum number of points you want to generate
+      double max_points = 20; // Maximum number of points you want to generate
       double length = dubins_path_length(&path);
 
       double step_size = length / max_points; // Calculate step size based on path length
@@ -224,7 +203,7 @@ std::vector<geometry_msgs::msg::PoseStamped> prmstar::generateDubinsPath(const N
         double q[3];
         if (dubins_path_sample(&path, t, q) == 0) {
           if (isInCollision(q[0], q[1])) {
-            RCLCPP_WARN(node_->get_logger(), "Dubins path collides with obstacle. Trying larger turning radius.");
+            // RCLCPP_WARN(node_->get_logger(), "Dubins path collides with obstacle. Trying larger turning radius.");
             path_found = false;
             break; // Exit the loop and try with a larger turning radius
           }
@@ -245,9 +224,9 @@ std::vector<geometry_msgs::msg::PoseStamped> prmstar::generateDubinsPath(const N
     dubins_path.clear(); // Clear the previous path
   }
 
-  if (!path_found) {
-    RCLCPP_ERROR(node_->get_logger(), "Failed to generate a collision-free Dubins path after multiple attempts.");
-  }
+  // if (!path_found) {
+  //   // RCLCPP_ERROR(node_->get_logger(), "Failed to generate a collision-free Dubins path after multiple attempts.");
+  // }
 
   return dubins_path;
 }
@@ -360,8 +339,10 @@ std::vector<Node*> prmstar::findShortestPath(const std::vector<Node>& nodes, con
         neighbor->f = neighbor->g + neighbor->h;
 
         // Calculate orientation (theta) for the neighbor node
-        neighbor->theta = atan2(neighbor->y - current->y, neighbor->x - current->x);
-
+        if(neighbor != goal_node)
+        {
+          neighbor->theta = atan2(neighbor->y - current->y, neighbor->x - current->x);
+        }
         if (std::find(open_set.begin(), open_set.end(), neighbor) == open_set.end())
         {
           open_set.push_back(neighbor);
