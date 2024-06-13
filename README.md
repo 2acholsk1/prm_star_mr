@@ -78,6 +78,17 @@ export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/opt/ros/humble/share/turtlebot3_gaz
     ros2 launch nav2_bringup tb3_simulation_launch.py headless:=True params_file:=/home/ws/src/prm_star/config/nav2_params2.yaml robot_sdf:=/home/ws/src/ackermann_v2/src/description/ackermann_vehicle.urdf rviz_config_file:=/home/ws/src/ackermann_v2/rviz/rviz_config.rviz
     ```
 
+    Launch HybridPlanner + RPP:
+    ```bash
+    ros2 launch nav2_bringup tb3_simulation_launch.py headless:=True params_file:=/home/ws/src/prm_star/config/nav2_rpp.yaml robot_sdf:=/home/ws/src/ackermann_v2/src/description/ackermann_vehicle.urdf rviz_config_file:=/home/ws/src/ackermann_v2/rviz/rviz_config.rviz
+    ```
+
+    If you want to launch any of above configurations on our map add:
+    ```bash
+    world:=/home/ws/src/prm_star/worlds/mapa2.sdf map:=/home/ws/src/prm_star/worlds/mapa2.yaml
+    ```
+    at the end of any launch command.
+
 
 ## Current state:
 

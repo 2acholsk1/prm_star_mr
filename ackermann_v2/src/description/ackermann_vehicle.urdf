@@ -262,8 +262,8 @@
       <front_wheel_track>0.12</front_wheel_track>
       <rear_wheel_track>0.12</rear_wheel_track>
 
-      <max_speed>20</max_speed>
-      <max_steer>1.707</max_steer>
+      <max_speed>2</max_speed>
+      <max_steer>0.707</max_steer>
       <max_steering_angle>50</max_steering_angle>
       
       <left_steering_pid_gain>50 1 10</left_steering_pid_gain>
