@@ -27,7 +27,7 @@
   <joint name="base_joint" type="fixed">
         <parent link="base_link"/>
         <child link="base_footprint"/>
-        <origin xyz="0.0 0.0 -0.05" rpy="0 0 0"/>
+        <origin xyz="-0.1 0.0 -0.05" rpy="0 0 0"/>
     </joint>
 
   <!-- Przednie lewe koło -->
@@ -219,15 +219,10 @@
                     </horizontal>
                 </scan>
                 <range>
-                    <min>0.120000</min>
+                    <min>0.15000</min>
                     <max>3.5</max>
                     <resolution>0.015000</resolution>
                 </range>
-                <noise>
-                    <type>gaussian</type>
-                    <mean>0.0</mean>
-                    <stddev>0.01</stddev>
-                </noise>
             </ray>
             <plugin name="scan" filename="libgazebo_ros_ray_sensor.so">
                 <ros>
@@ -263,13 +258,13 @@
       <left_steering_joint>left_steering_joint</left_steering_joint>
       <right_steering_joint>right_steering_joint</right_steering_joint>
       
-      <wheel_base>0.5</wheel_base>
-      <front_wheel_track>0.4</front_wheel_track>
-      <rear_wheel_track>0.4</rear_wheel_track>
+      <wheel_base>0.2</wheel_base>
+      <front_wheel_track>0.12</front_wheel_track>
+      <rear_wheel_track>0.12</rear_wheel_track>
 
-      <max_speed>2</max_speed>
-      <max_steer>0.707</max_steer>
-      <max_steering_angle>5</max_steering_angle>
+      <max_speed>20</max_speed>
+      <max_steer>1.707</max_steer>
+      <max_steering_angle>50</max_steering_angle>
       
       <left_steering_pid_gain>50 1 10</left_steering_pid_gain>
       <right_steering_pid_gain>50 1 10</right_steering_pid_gain>
