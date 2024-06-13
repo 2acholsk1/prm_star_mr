@@ -107,7 +107,7 @@ nav_msgs::msg::Path prmstar::createPlan(
   std::vector<Node*> path = findShortestPath(roadmap, start, goal);
 
   // Adjust orientations to allow Dubins path generation
-  adjustOrientations(path);
+  // adjustOrientations(path);
 
   // Convert the path to ROS message format and add PRM path
   for (size_t i = 0; i < path.size() - 1; ++i)
@@ -145,55 +145,55 @@ std::vector<Node> prmstar::generateRoadmap(const geometry_msgs::msg::PoseStamped
   std::vector<Node> nodes;
   std::default_random_engine generator;
 
-  // Get the map bounds
-  double map_min_x = costmap_->getOriginX();
-  double map_max_x = map_min_x + costmap_->getSizeInMetersX();
-  double map_min_y = costmap_->getOriginY();
-  double map_max_y = map_min_y + costmap_->getSizeInMetersY();
+  // Set random sampling range based on map boundaries
+  std::uniform_real_distribution<double> distribution_x(-3.0, 3.0);
+  std::uniform_real_distribution<double> distribution_y(-3.0, 3.0);
+  std::uniform_real_distribution<double> distribution_yaw(-M_PI, M_PI);
 
-  // Set sampling ranges based on map bounds
-  std::uniform_real_distribution<double> distribution_x(map_min_x, map_max_x);
-  std::uniform_real_distribution<double> distribution_y(map_min_y, map_max_y);
-
-  // Add start and goal to the nodes
+  // Add start and goal to nodes
   nodes.push_back({start.pose.position.x, start.pose.position.y, tf2::getYaw(start.pose.orientation)});
   nodes.push_back({goal.pose.position.x, goal.pose.position.y, tf2::getYaw(goal.pose.orientation)});
 
-  // Define initial connection radius
-  double connection_radius = calculateConnectionRadius(nodes.size());
-
-  // Sample random nodes and connect them
+  // Sample random nodes
   for (int i = 0; i < num_samples_; ++i)
   {
     double x = distribution_x(generator);
     double y = distribution_y(generator);
+    double yaw = distribution_yaw(generator);
 
+    // Check collision for sampled point
     if (!isInCollision(x, y)) {
-      Node newNode = {x, y, 0.0};
-
-      // Connect the new node to existing nodes within the current radius
-      for (auto& existingNode : nodes) {
-        if (distance(newNode, existingNode) < connection_radius && !collisionCheck(newNode, existingNode)) {
-          newNode.neighbors.push_back(&existingNode);
-          existingNode.neighbors.push_back(&newNode);
-        }
-      }
-
-      nodes.push_back(newNode);
-
-      // Update the connection radius based on the current number of nodes
-      connection_radius = calculateConnectionRadius(nodes.size());
+      nodes.push_back({x, y, yaw});
     }
+  }
+
+  double connection_radius_temp = 1.0;
+
+  double gamma_ = 1.0;
+  int i = 2;
+
+  // Connect nodes within connection radius
+  for (auto& node1 : nodes)
+  {
+    for (auto& node2 : nodes)
+    {
+      if (&node1 != &node2 && distance(node1, node2) < connection_radius_temp && !collisionCheck(node1, node2))
+      {
+
+
+        node1.neighbors.push_back(&node2);
+        node2.neighbors.push_back(&node1);
+      }
+    }
+
+    connection_radius_temp = gamma_ * std::pow(std::log(i) / i, 1.0 / 2.0);
+
+    i++;
   }
 
   return nodes;
 }
 
-double prmstar::calculateConnectionRadius(int numNodes)
-{
-  // Dynamic calculation of connection radius based on the current number of nodes
-  return gamma_ * std::pow(std::log(numNodes) / numNodes, 1.0 / 2.0);
-}
 
 std::vector<geometry_msgs::msg::PoseStamped> prmstar::generateDubinsPath(const Node& a, const Node& b)
 {
@@ -281,67 +281,98 @@ double prmstar::distance(const Node& a, const Node& b)
 
 double prmstar::heuristic(const Node& a, const Node& b)
 {
-  return distance(a, b);
-}
+  // Euclidean distance as the heuristic
+  double euclidean_distance = std::hypot(a.x - b.x, a.y - b.y);
 
-std::vector<Node*> prmstar::findShortestPath(const std::vector<Node>& roadmap, const geometry_msgs::msg::PoseStamped& start, const geometry_msgs::msg::PoseStamped& goal)
-{
-  std::vector<Node*> path;
-
-  // Create a priority queue for Dijkstra's algorithm
-  std::priority_queue<std::pair<double, Node*>, std::vector<std::pair<double, Node*>>, std::greater<std::pair<double, Node*>>> pq;
-
-  // Maps to store distances and predecessors
-  std::unordered_map<Node*, double> distances;
-  std::unordered_map<Node*, Node*> predecessors;
-
-  // Initialize distances to infinity and start node distance to 0
-  for (const auto& node : roadmap) {
-    distances[const_cast<Node*>(&node)] = std::numeric_limits<double>::infinity();
-  }
-
-  Node* start_node = const_cast<Node*>(&roadmap[0]);
-  distances[start_node] = 0.0;
-  pq.push({0.0, start_node});
-
-  // Dijkstra's algorithm
-  while (!pq.empty())
-  {
-    Node* current = pq.top().second;
-    pq.pop();
-
-    if (current->x == goal.pose.position.x && current->y == goal.pose.position.y) {
-      break; // Reached goal
-    }
-
-    for (Node* neighbor : current->neighbors)
-    {
-      double new_cost = distances[current] + distance(*current, *neighbor);
-      if (new_cost < distances[neighbor]) {
-        distances[neighbor] = new_cost;
-        predecessors[neighbor] = current;
-        pq.push({new_cost, neighbor});
+  // Additional cost for proximity to obstacles
+  double obstacle_proximity_cost = 0.0;
+  double proximity_threshold = 0.2; // Threshold distance to consider obstacle proximity
+  for (double dx = -proximity_threshold; dx <= proximity_threshold; dx += 0.1) {
+    for (double dy = -proximity_threshold; dy <= proximity_threshold; dy += 0.1) {
+      if (isInCollision(a.x + dx, a.y + dy)) {
+        obstacle_proximity_cost += 0.5; // Increase cost if near obstacle
       }
     }
   }
 
-  // Reconstruct the path from goal to start
-  Node* current = nullptr;
-  for (auto& node : roadmap) {
-    if (node.x == goal.pose.position.x && node.y == goal.pose.position.y) {
-      current = const_cast<Node*>(&node);
-      break;
+  return euclidean_distance + obstacle_proximity_cost;
+}
+
+std::vector<Node*> prmstar::findShortestPath(const std::vector<Node>& nodes, const geometry_msgs::msg::PoseStamped& start, const geometry_msgs::msg::PoseStamped& goal)
+{
+  Node* start_node = nullptr;
+  Node* goal_node = nullptr;
+
+  // Find the start and goal nodes
+  for (auto& node : nodes)
+  {
+    if (node.x == start.pose.position.x && node.y == start.pose.position.y)
+    {
+      start_node = const_cast<Node*>(&node);
+    }
+    if (node.x == goal.pose.position.x && node.y == goal.pose.position.y)
+    {
+      goal_node = const_cast<Node*>(&node);
     }
   }
 
-  while (current != nullptr) {
-    path.push_back(current);
-    current = predecessors[current];
+  if (!start_node || !goal_node)
+  {
+    return {}; // Return empty path if start or goal node is not found
   }
 
-  std::reverse(path.begin(), path.end());
-  return path;
+  start_node->g = 0;
+  start_node->f = heuristic(*start_node, *goal_node);
+
+  std::vector<Node*> open_set = {start_node};
+
+  while (!open_set.empty())
+  {
+    // Find the node with the lowest f score
+    auto current_it = std::min_element(open_set.begin(), open_set.end(), [](Node* a, Node* b) {
+      return a->f < b->f;
+    });
+    Node* current = *current_it;
+
+    if (current == goal_node)
+    {
+      // Reconstruct the path
+      std::vector<Node*> path;
+      for (Node* node = goal_node; node != nullptr; node = node->parent)
+      {
+        path.push_back(node);
+      }
+      std::reverse(path.begin(), path.end());
+      return path;
+    }
+
+    open_set.erase(current_it);
+
+    for (Node* neighbor : current->neighbors)
+    {
+      double tentative_g = current->g + distance(*current, *neighbor);
+
+      if (tentative_g < neighbor->g)
+      {
+        neighbor->parent = current;
+        neighbor->g = tentative_g;
+        neighbor->h = heuristic(*neighbor, *goal_node);
+        neighbor->f = neighbor->g + neighbor->h;
+
+        // Calculate orientation (theta) for the neighbor node
+        neighbor->theta = atan2(neighbor->y - current->y, neighbor->x - current->x);
+
+        if (std::find(open_set.begin(), open_set.end(), neighbor) == open_set.end())
+        {
+          open_set.push_back(neighbor);
+        }
+      }
+    }
+  }
+
+  return {}; // Return empty path if no path is found
 }
+
 
 } // namespace nav2_prmstar_planner
 
