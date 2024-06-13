@@ -174,8 +174,6 @@ __MPPI (Model Predictive Path Integral Control)__
 - Supports Differential, Ackermann, and Legged robots.
 - Exact path following.
 
-
-
 ## Config files:
 
 ackermann_v2/src/decription/ackermann_vehicle.urdf - our vehicle model
