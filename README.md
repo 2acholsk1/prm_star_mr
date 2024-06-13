@@ -68,9 +68,14 @@ export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/opt/ros/humble/share/turtlebot3_gaz
     sudo cp /home/ws/src/utils/tb3_simulation_launch.py /opt/ros/humble/share/nav2_bringup/launch/tb3_simulation_launch.py
     ```
     
-    Launch using:
+    Launch PRM* using:
     ```bash
     ros2 launch nav2_bringup tb3_simulation_launch.py headless:=False params_file:=/home/ws/src/prm_star/config/nav2_params.yaml robot_sdf:=/home/ws/src/ackermann_v2/src/description/ackermann_vehicle.urdf rviz_config_file:=/home/ws/src/ackermann_v2/rviz/rviz_config.rviz
+    ```
+
+    Launch HybridPlanner + MPPI using:
+    ```bash
+    ros2 launch nav2_bringup tb3_simulation_launch.py headless:=True params_file:=/home/ws/src/prm_star/config/nav2_params2.yaml robot_sdf:=/home/ws/src/ackermann_v2/src/description/ackermann_vehicle.urdf rviz_config_file:=/home/ws/src/ackermann_v2/rviz/rviz_config.rviz
     ```
 
 
