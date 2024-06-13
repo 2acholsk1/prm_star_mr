@@ -190,7 +190,7 @@ __JJayU__ - [Github](https://github.com/JJayU) (Jakub Junkiert, 147550)
 
 __the_HaUBe__ - [Github](https://github.com/theHaUBe) (Hubert Górecki 147599)
 
-__Yerbiff__ - [Github](https://github.com/Yerbiff) (Jarosław Kuźma 147917)
+__Yerbiff__ - [Github](https://github.com/Yerbiff) (Jarosław Kuźma 147617)
 
 __2acholsk1__ - [Github](https://github.com/2acholsk1) (Piotr Zacholski 147597)
 
