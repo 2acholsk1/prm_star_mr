@@ -52,7 +52,8 @@ set(dependencies
 
 # Create Cpp executable
 add_library(${library_name} SHARED
-  src/prm_star_planner.cpp
+  src/prmstar_planner.cpp
+  src/dubins.cpp 
 )
 
 add_executable(cpp_executable src/prm_star_planner.cpp)
