@@ -1,6 +1,6 @@
 # BOLIDNAV2 PROJECT
 
-![alt text](img/main_image.png)
+![alt text](img/bolid.png)
 
 ## Table of Contents
 
