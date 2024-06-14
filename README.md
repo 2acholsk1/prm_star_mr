@@ -14,7 +14,9 @@
 
 ## Main goal
 
-
+The main goal of our project was to test and evaluate various controllers and path planners for a vehicle with Ackerman kinematics.
+Our goal was to identify the most efficient and effective methods for navigating various environments.
+As part of this process, we analyzed the operation of controllers: DWB, Pure Pursuit, MPPI and path planners: PRM, Hybrid A*.
 
 ## Installation Guide
 
@@ -108,6 +110,17 @@ export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/opt/ros/humble/share/turtlebot3_gaz
 
 ### 1. Ackerman + PRM + Dubins
 
+In the project we use a simplified kinematic model of the car, expressed by the formula:
+```math
+\begin{bmatrix}\dot{x}\\\dot{y}\\\dot{θ}\\\dot{Φ}\end{bmatrix} =
+\begin{bmatrix}cos(θ)\\sin(θ)\\\frac{1}{L}tan(Φ)\\0\end{bmatrix}u_1 +
+\begin{bmatrix}0\\0\\0\\1\end{bmatrix}u_2
+```
+
+Φ - the steering angle
+θ - car’s orientation 
+L - distance between front and rear axles
+
 __PRM (Probabilistic Roadmap Method)__
 - Generate random points in the configuration space.
 - Connect these points with edges representing possible vehicle movements, decreasing the connection radius as more points are added.
@@ -165,14 +178,24 @@ __MPPI (Model Predictive Path Integral Control)__
 
 ### 5. Comparision of controllers:
 
-## DWB Controller
-- Only for Differential and Omnidirectional robot types.
+### DWB Controller (Dynamic-Window Approach)
+
+- Suitable for: Differential and Omnidirectional robots.
 - Dynamic obstacle avoidance.
-## MPPI Controller
-- Additionally supports Ackermann and Legged robots.
-## RPP (Reference Path Planner)
-- Supports Differential, Ackermann, and Legged robots.
-- Exact path following.
+- Efficient real-time obstacle avoidance, adaptable to various robot types with holonomic constraints.
+- Limited to specific robot types, may struggle with complex environments if not properly tuned.
+
+### MPPI Controller (Model Predictive Path Integral Control)
+- Suitable for: Differential, Ackermann, and Legged robots.
+- Path planning, trajectory optimization, obstacle avoidance.
+- Handles a wide range of robot types, accounts for dynamic and kinematic constraints, uses stochastic optimization for better performance in complex environments.
+- Higher computational complexity, may require significant tuning and computational resources.
+
+### Regulated Pure Pursuit
+- Suitable for: Ackermann steering vehicles.
+- Trajectory tracking.
+- Simple and effective for following predefined paths, good for low-speed precision maneuvers.
+- Can lead to instability at high speeds, less effective for dynamic obstacle avoidance, may require tuning of lookahead distance based on speed and curvature.
 
 ## Config files:
 
