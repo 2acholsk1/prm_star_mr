@@ -117,9 +117,9 @@ In the project we use a simplified kinematic model of the car, expressed by the 
 \begin{bmatrix}0\\0\\0\\1\end{bmatrix}u_2
 ```
 
-Φ - the steering angle
-θ - car’s orientation 
-L - distance between front and rear axles
+, where Φ - the steering angle, 
+θ - car’s orientation, 
+L - distance between front and rear axles.
 
 __PRM (Probabilistic Roadmap Method)__
 - Generate random points in the configuration space.
@@ -178,20 +178,20 @@ __MPPI (Model Predictive Path Integral Control)__
 
 ### 5. Comparision of controllers:
 
-### DWB Controller (Dynamic-Window Approach)
+#### DWB Controller (Dynamic-Window Approach)
 
 - Suitable for: Differential and Omnidirectional robots.
 - Dynamic obstacle avoidance.
 - Efficient real-time obstacle avoidance, adaptable to various robot types with holonomic constraints.
 - Limited to specific robot types, may struggle with complex environments if not properly tuned.
 
-### MPPI Controller (Model Predictive Path Integral Control)
+#### MPPI Controller (Model Predictive Path Integral Control)
 - Suitable for: Differential, Ackermann, and Legged robots.
 - Path planning, trajectory optimization, obstacle avoidance.
 - Handles a wide range of robot types, accounts for dynamic and kinematic constraints, uses stochastic optimization for better performance in complex environments.
 - Higher computational complexity, may require significant tuning and computational resources.
 
-### Regulated Pure Pursuit
+#### Regulated Pure Pursuit
 - Suitable for: Ackermann steering vehicles.
 - Trajectory tracking.
 - Simple and effective for following predefined paths, good for low-speed precision maneuvers.
