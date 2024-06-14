@@ -98,7 +98,6 @@ ament_python_install_package(prm_star)
 
 # Install Python executables
 install(PROGRAMS
-  scripts/hello.py
   DESTINATION lib/prm_star
 )
 ament_export_include_directories(include)
