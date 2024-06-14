@@ -3,7 +3,7 @@
 <package format="3">
   <name>ackermann_v2</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Ackermann car model</description>
   <maintainer email="jakub.junkiert@gmail.com">2acholsk1</maintainer>
   <license>TODO: License declaration</license>
 
